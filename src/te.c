@@ -96,18 +96,31 @@ int ReadKey(){
 int ProcessKey(int key){
   switch(key){
     case CTRL_Q: return 1;
-    case ENTER: write(STDOUT_FILENO,"\r\n",2); break;
+    case ENTER:
+      if (cx > 0){
+        cy++; //move down a row
+        cx=0; //move the cur to start of the line
+      }
+      break;
+
+    //left,right,up and down cur update 
     case ARROW_UP: write(STDOUT_FILENO,"\033[A",3); break;
     case ARROW_DOWN: write(STDOUT_FILENO,"\033[B",3); break;
     case ARROW_RIGHT: write(STDOUT_FILENO,"\033[C",3); break;
     case ARROW_LEFT: write(STDOUT_FILENO,"\033[D",3); break;
-    case BACKSPACE: write(STDOUT_FILENO,"\b \b",3); break;
-    default:
-      if(!iscntrl(key)){
-        printf("%c",key);
-        fflush(stdout);
+
+    case BACKSPACE:
+      if (cx>0){
+        //gb_delete(&lines[cy]); 
+        cx--;
       }
+      break;
+
+    default:
+      if(!iscntrl(key)){printf("%c",key);fflush(stdout);}
+      break;
   }
+  return 0;
 }
 
 void GetTerminalSize(){
