@@ -1,0 +1,16 @@
+plan
+
+#te.c // plan for the main project;
+
+  need to the funtion add altscreen and exitalt screen and also a clearup funtion
+  In drawscreen funtion i need to add this 
+  add rows and cols 
+  status bar
+  cursor postion 
+
+#drawscreen.c  // plane for the drawscreen file  
+  add rows and cols 
+  status bar
+  cursor postion 
+
+
