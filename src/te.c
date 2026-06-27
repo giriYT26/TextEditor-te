@@ -6,9 +6,22 @@
 #include <ctype.h>
 #include <string.h>
 
+#define MAX_LINES 1000
+#define GAP_SIZE 16
+
 struct termios original,rm;
 int col,row;
 int cx,cy;
+
+typedef struct {
+  char *buf;
+  int gap_start;
+  int gap_end
+  int size;
+}GapBuffer;
+
+GapBuffer lines[MAX_LINES]; //init the GapBuffer
+int num_lines = 0;
 
 enum KEY_ACTION{
   //all the key action that mention below is maped their respected ASCII value 
@@ -41,6 +54,7 @@ void enterAltScreen(); //Enters to a alternate screen
 void exitAltScreen(); //Exits the alternate screen
 void DrawScreen(); //draws the screen 
 void clearup(); //used to reset the terminal to original settings
+void gb_init(); //init the GapBuffer with malloc 
 
 //Main funtion 
 int main(){
@@ -61,8 +75,6 @@ int main(){
   }
 
   return 0;
-
-
 }
 
 int ReadKey(){
@@ -87,8 +99,7 @@ int ReadKey(){
           case 'H' : return HOME_KEY;
         }
       }
-    return ESC;
-      
+    return ESC;      
   }
   return chr;
 }
@@ -123,6 +134,43 @@ int ProcessKey(int key){
   return 0;
 }
 
+//GapBuffer
+void gb_init(GapBuffer *gb)
+{
+  gb->buf = malloc(GAP_SIZE);
+  gb->gap_start = 0;
+  gb->gap_end = GAP_SIZE;
+  gb->size = GAP_SIZE;
+}
+
+int gb_length(GapBuffer *gb)
+{
+  return (gb->size - (gb->gap_end - gb->gap_start));
+}
+
+void gb_grow(GapBuffer *gb)
+{
+  gb->buf = realloc(gb->buf,gb->size + GAP_SIZE);
+  memmove(gb->gap_start + gb->gap_end + GAP_SIZE,    //destination
+          gb->buf + gb->gap_end,                    //source
+          gb->size - gb->gap_end);
+}
+
+void gb_insert(GapBuffer *gb, char c)
+{
+  if (gb->gap_start == gb->gap_end) gb_grow(gb);
+  gb->lines[gb->gap_start] = c;
+  gb->gap_start++;
+}
+
+void gb_delete(GapBuffer *gb)
+{
+  if(gb->gap_start > 0) gb->gap_start--; 
+}
+
+
+
+//Terminal  
 void GetTerminalSize(){
   struct winsize ws;
   ioctl(STDOUT_FILENO,TIOCGWINSZ,&ws);
